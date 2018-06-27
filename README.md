@@ -8,3 +8,6 @@ ANativeWindow_lock(window, & windowBuffer, NULL);
 (3) 填充缓存区  
 (4) 解锁缓存区交给SurfaceFlinger消费并合成，等到VSYNC信号来后开始描画  
 ANativeWindow_unlockAndPost(window);  
+
+注意:  
+OpenGLSurfaceView和GraphicBuffer的width和height可以不一致，图层合成以GraphicBuffer的大小为准，GraphicBuffer决定了Layer的大小。
