@@ -11,6 +11,7 @@
 #include <android/native_window_jni.h>
 
 #include <android/bitmap.h>
+#include <atomic.h>
 
 
 #define APP_NAME "OpenGlProc"
@@ -27,6 +28,7 @@ EGLDisplay eglDisplay;
 EGLint mWidth;
 EGLint mHeight;
 GLuint mTextureId;
+uint32_t mTransactionFlags = 0x00;
 
 
 void native_set_color(JNIEnv *env, jobject obj, jint color)
@@ -106,6 +108,18 @@ int native_show_bitmap(JNIEnv *env, jobject obj, jobject bitmap)
     AndroidBitmap_unlockPixels(env, bitmap);*/
 
     return 0;
+}
+
+uint32_t setTransactionFlags(uint32_t flags) {
+    uint32_t old = android_atomic_or(flags, &mTransactionFlags);
+    if ((old & flags)==0) { // wake the server up
+       //LOGI("setTransactionFlags================flags:%02x, old:%02x, mTransactionFlags:%02x",flags, old, mTransactionFlags);
+    }
+    return old;
+}
+
+uint32_t peekTransactionFlags() {
+    return android_atomic_release_load(&mTransactionFlags);
 }
 
 int native_surface_init(JNIEnv *env, jobject obj, jobject surface, jobject bitmap)
@@ -232,7 +246,7 @@ int native_surface_init(JNIEnv *env, jobject obj, jobject surface, jobject bitma
         LOGI("native_surface_init================Buffer info width:%d, height:%d, stride:%d, dataLen:%d, format:%d",windowBuffer.width,windowBuffer.height,windowBuffer.stride,dataLen, windowBuffer.format);
 
         if (windowBuffer.bits != NULL) {
-            memcpy(windowBuffer.bits,data, 1555200);
+            memcpy(windowBuffer.bits,data, sizeof(int) *info.width * info.height);
             /*if (windowBuffer.width == windowBuffer.stride) {
                 memcpy(windowBuffer.bits, data, dataLen);
             } else {
@@ -250,9 +264,15 @@ int native_surface_init(JNIEnv *env, jobject obj, jobject surface, jobject bitma
         //ANativeWindow_release(window);
 
         ANativeWindow_unlockAndPost(window);
+        uint32_t flags = 0x01;
+        //setTransactionFlags(flags);
+        //LOGI("native_surface_init================ flags:%02x",peekTransactionFlags());
+
+        //setTransactionFlags(0x02);
+        //setTransactionFlags(0x04);
+        //LOGI("native_surface_init================ flags:%02x",peekTransactionFlags());
         return 0;
 }
-
 
 
 void native_surface_finalize(JNIEnv *env, jobject obj)

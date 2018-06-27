@@ -44,7 +44,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback{
         InputStream open;
         Bitmap bitmap;
         try {
-            open = manager.open("GStreamer_overview.png");
+            open = manager.open("GStreamer_overview_new.png");
             bitmap = BitmapFactory.decodeStream(open);
             nativeSurfaceInit(surfaceHolder.getSurface(), bitmap);
             nativeShowBitmap(bitmap);
@@ -57,8 +57,9 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback{
     }
 
     @Override
-    public void surfaceChanged(SurfaceHolder surfaceHolder, int i, int i1, int i2) {
-
+    public void surfaceChanged(SurfaceHolder holder, int format, int width,
+                               int height) {
+        Log.i("OpenGLProc"," surfaceChanged width:"+width+" height:"+height+" format:"+format);
     }
 
     @Override
